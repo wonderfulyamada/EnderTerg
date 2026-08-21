@@ -1,6 +1,10 @@
 # Changelog
 
-## [1.0.0] - 2023-09-15
+## [1.0.0] - 2026-08-21
 
 ### Added
-- This is a default template changelog that follows the [KeepAChangelog Convention](https://keepachangelog.com/en/1.1.0/)
+- Ender Terg item with a shapeless Name Tag and Ender Pearl recipe.
+- Anvil naming and binding to non-player living entities.
+- NBT-backed entity recall across unloaded chunks and dimensions.
+- Duplicate-instance prevention during recall.
+- Enderman teleport sound on successful recall.
