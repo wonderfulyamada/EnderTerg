@@ -1,0 +1,6 @@
+item.endertag.ender_tag.name=Ender Terg
+message.endertag.unnamed=The Ender Terg must be named in an anvil first.
+message.endertag.unbound=This Ender Terg is not bound to an entity.
+message.endertag.wrong_dimension=The bound entity is in another dimension.
+message.endertag.unavailable=The bound entity is unavailable.
+message.endertag.bound=Entity bound to this Ender Terg.

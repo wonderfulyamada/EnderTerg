@@ -13,13 +13,16 @@ out
 *.iml
 .idea
 
-# gradle
-build
-.gradle
+# gradle and generated build output
+/build/
+/.gradle/
 
 # kate
 *.kate-swp
 
+# generated development runtime files
+/run/
+/run.bat
+
 # other
 eclipse
-run

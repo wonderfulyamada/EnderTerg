@@ -1,21 +1,35 @@
-## TemplateDevEnv
-_For Kotlin see [TemplateDevEnvKt](https://github.com/CleanroomMC/TemplateDevEnvKt)_
+# Ender Terg
 
-Template workspace for modding Minecraft 1.12.2. Licensed under MIT, it is made for public use.
+Ender Terg binds a named living mob to a reusable tag and recalls it to you.
+Its saved entity NBT lets recall work even when the original chunk is unloaded
+or the mob is in another dimension.
 
-This template runs on **Java 25**, **Gradle 9.7.0** + **[RetroFuturaGradle](https://github.com/GTNewHorizons/RetroFuturaGradle) 2.0.3** + **Forge 14.23.5.2847**.
+## Requirements
 
-With **coremod and mixin support** that is easy to configure.
+- Minecraft 1.12.2
+- Forge 14.23.5.2847 or compatible Forge for Minecraft 1.12.2
 
-### Instructions:
+## Recipe
 
-1. Click `use this template` at the top.
-2. Clone the repository that you have created with this template to your local machine.
-3. Make sure IDEA is using Java 25 for Gradle before you sync the project. Verify this by going to IDEA's `Settings > Build, Execution, Deployment > Build Tools > Gradle > Gradle JVM`.
-4. Open the project folder in IDEA. When prompted, click "Load Gradle Project" as it detects the `build.gradle`, if you weren't prompted, right-click the project's `build.gradle` in IDEA, select `Link Gradle Project`, after completion, hit `Refresh All` in the gradle tab on the right.
-5. Run gradle tasks such as `runClient` and `runServer` in the IDEA gradle tab, or use the auto-imported run configurations like `1. Run Client`.
+Craft an Ender Terg with a Name Tag and an Ender Pearl.
 
-### Notes:
-- Dependencies script in [gradle/scripts/dependencies.gradle](gradle/scripts/dependencies.gradle), explanations are commented in the file.
-- Publishing script in [gradle/scripts/publishing.gradle](gradle/scripts/publishing.gradle).
-- When writing Mixins on IntelliJ, it is advisable to use latest [MinecraftDev Fork for RetroFuturaGradle](https://github.com/eigenraven/MinecraftDev/releases).
+## Usage
+
+1. Rename the Ender Terg in an anvil.
+2. Right-click a non-player mob with the renamed Ender Terg to bind it.
+3. Right-click while holding the Ender Terg in the air to recall that mob.
+
+Recall reconstructs the bound entity from its stored NBT at your current
+location and dimension. This preserves supported entity data such as its name,
+health, equipment, inventory, AI state, and modded NBT data.
+
+## Installation
+
+1. Install Minecraft Forge for 1.12.2.
+2. Download the Ender Terg jar from the release page.
+3. Place the jar in your Minecraft instance's `mods` folder.
+4. Launch Minecraft with the Forge profile.
+
+## License
+
+Ender Terg is licensed under the [MIT License](LICENSE).
