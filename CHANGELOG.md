@@ -1,6 +1,6 @@
 # Changelog
 
-## [1.1.0] - Unreleased
+## [1.1.0] - 2026-09-28
 
 ### Added
 - Configurable `entityBlacklist` for entity registry IDs that cannot be bound.
