@@ -1,15 +1,16 @@
-# A deployment template that works out of the box
-# It supports these objectives:
-# - Deploy to Maven (Build Job) [Secrets: MAVEN_USER, MAVEN_PASS]
-# - Deploy to CurseForge (Upload Job) [Secrets: CURSEFORGE_TOKEN]
-# - Deploy to Modrinth (Upload Job) [Secrets: MODRINTH_TOKEN]
+# Release deployment. This workflow only runs for SemVer release tags.
+# Creating a normal commit or pushing a branch never publishes the mod.
 
 name: Deploy
 
 on:
   push:
     tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
       - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -22,11 +23,31 @@ jobs:
         run: chmod +x gradlew
 
       - name: Read gradle.properties
-        uses: BrycensRanch/read-properties-action@v1
         id: properties
-        with:
-          file: gradle.properties
-          all: true
+        shell: bash
+        run: |
+          read_prop() {
+            local key="$1"
+            sed -nE "s/^[[:space:]]*${key}[[:space:]]*=[[:space:]]*(.*)$/\\1/p" gradle.properties \
+              | head -n 1 \
+              | sed 's/[[:space:]]*$//'
+          }
+
+          for key in mod_version mod_id mod_name publish_to_maven publish_to_local_maven publish_to_curseforge publish_to_modrinth maven_name; do
+            value="$(read_prop "$key")"
+            echo "$key=$value" >> "$GITHUB_OUTPUT"
+          done
+
+      - name: Validate release tag matches mod version
+        shell: bash
+        env:
+          MOD_VERSION: ${{ steps.properties.outputs.mod_version }}
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$TAG_VERSION" != "$MOD_VERSION" ]; then
+            echo "Release tag version '$TAG_VERSION' does not match mod_version '$MOD_VERSION'."
+            exit 1
+          fi
 
       - name: Setup Java
         uses: actions/setup-java@v5
@@ -35,7 +56,26 @@ jobs:
           distribution: 'zulu'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@6
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Build release jar
+        run: ./gradlew build
+
+      - name: Prepare GitHub release notes
+        shell: bash
+        env:
+          MOD_VERSION: ${{ steps.properties.outputs.mod_version }}
+        run: |
+          awk -v version="$MOD_VERSION" '
+            $0 ~ "^## \\[" version "\\]" { in_section = 1; next }
+            in_section && /^## \[/ { exit }
+            in_section { print }
+          ' CHANGELOG.md > release-notes.md
+
+          if [ ! -s release-notes.md ]; then
+            echo "No changelog section found for $MOD_VERSION."
+            exit 1
+          fi
 
       - name: Publish to Maven
         if: steps.properties.outputs.publish_to_maven == 'true' && steps.properties.outputs.publish_to_local_maven == 'true'
@@ -55,3 +95,11 @@ jobs:
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
         run: ./gradlew modrinth
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          name: ${{ steps.properties.outputs.mod_name }} v${{ steps.properties.outputs.mod_version }}
+          body_path: release-notes.md
+          fail_on_unmatched_files: true
+          files: build/libs/${{ steps.properties.outputs.mod_id }}-${{ steps.properties.outputs.mod_version }}.jar

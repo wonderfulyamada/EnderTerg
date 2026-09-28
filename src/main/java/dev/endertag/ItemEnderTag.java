@@ -23,7 +23,7 @@ import net.minecraft.world.WorldServer;
 
 public class ItemEnderTag extends Item {
 
-    private static final String TAG_BINDING_ID = "BindingId";
+    static final String TAG_BINDING_ID = "BindingId";
     private static final String TAG_ENTITY_NBT = "BoundEntityNbt";
 
     public ItemEnderTag() {
@@ -59,15 +59,19 @@ public class ItemEnderTag extends Item {
                 tag = new NBTTagCompound();
                 heldStack.setTagCompound(tag);
             }
+
             String bindingId = UUID.randomUUID().toString();
             target.getEntityData().setString(TAG_BINDING_ID, bindingId);
             NBTTagCompound entityNbt = writeBoundEntity(target);
             if (entityNbt == null) {
+                target.getEntityData().removeTag(TAG_BINDING_ID);
                 sendMessage(player, "message.endertag.unavailable");
                 return true;
             }
+
             tag.setString(TAG_BINDING_ID, bindingId);
             tag.setTag(TAG_ENTITY_NBT, entityNbt);
+            BindingRegistry.get((WorldServer) player.world).setActiveEntity(bindingId, target.getUniqueID());
             sendMessage(player, "message.endertag.bound");
         }
         return true;
@@ -91,11 +95,11 @@ public class ItemEnderTag extends Item {
         }
 
         String bindingId = tag.getString(TAG_BINDING_ID);
-        removeLoadedInstances(player, bindingId);
-
         WorldServer world = (WorldServer) player.world;
         NBTTagCompound entityNbt = tag.getCompoundTag(TAG_ENTITY_NBT).copy();
-        // A reconstructed entity must receive a fresh runtime UUID. BindingId is its persistent identity.
+
+        // Reconstructed entities get a fresh runtime UUID. BindingId is the
+        // persistent Ender Terg identity used to reject stale copies later.
         entityNbt.removeTag("UUIDMost");
         entityNbt.removeTag("UUIDLeast");
         Entity entity = EntityList.createEntityFromNBT(entityNbt, world);
@@ -107,10 +111,29 @@ public class ItemEnderTag extends Item {
         EntityLivingBase living = (EntityLivingBase) entity;
         living.getEntityData().setString(TAG_BINDING_ID, bindingId);
         living.setPositionAndUpdate(player.posX, player.posY, player.posZ);
+
+        BindingRegistry registry = BindingRegistry.get(world);
+        UUID previousActiveUuid = registry.getActiveEntity(bindingId);
+        UUID newActiveUuid = living.getUniqueID();
+
+        // EntityJoinWorldEvent validates against this registry while spawnEntity
+        // is running, so temporarily nominate the new instance before spawning.
+        registry.setActiveEntity(bindingId, newActiveUuid);
         if (!world.spawnEntity(living)) {
+            if (previousActiveUuid == null) {
+                registry.removeActiveEntity(bindingId);
+            } else {
+                registry.setActiveEntity(bindingId, previousActiveUuid);
+            }
             sendMessage(player, "message.endertag.unavailable");
             return;
         }
+
+        // Only retire older loaded instances after the replacement has spawned
+        // successfully. Unloaded stale instances are rejected when they later
+        // receive EntityJoinWorldEvent during chunk loading.
+        removeLoadedInstances(player, bindingId, newActiveUuid);
+
         world.playSound(null, player.posX, player.posY, player.posZ, SoundEvents.ENTITY_ENDERMEN_TELEPORT,
                 SoundCategory.PLAYERS, 1.0F, 1.0F);
         NBTTagCompound updatedEntityNbt = writeBoundEntity(living);
@@ -147,11 +170,12 @@ public class ItemEnderTag extends Item {
         return false;
     }
 
-    private void removeLoadedInstances(EntityPlayer player, String bindingId) {
+    private void removeLoadedInstances(EntityPlayer player, String bindingId, UUID activeUuid) {
         for (WorldServer world : player.getServer().worlds) {
             List<Entity> entities = new ArrayList<Entity>(world.loadedEntityList);
             for (Entity entity : entities) {
-                if (bindingId.equals(entity.getEntityData().getString(TAG_BINDING_ID))) {
+                if (bindingId.equals(entity.getEntityData().getString(TAG_BINDING_ID))
+                        && !activeUuid.equals(entity.getUniqueID())) {
                     entity.setDead();
                 }
             }

@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - master
+      - 'fix/**'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Grant Execute Permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'zulu'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Build and test
+        run: ./gradlew build
+
+      - name: Upload test jar
+        uses: actions/upload-artifact@v7
+        with:
+          name: endertag-${{ github.sha }}
+          path: |
+            build/libs/endertag-*.jar
+            !build/libs/*-sources.jar
+          if-no-files-found: error
