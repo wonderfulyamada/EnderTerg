@@ -47,7 +47,7 @@ jobs:
           distribution: 'zulu'
 
       - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@6
+        uses: gradle/actions/setup-gradle@v6
 
       - name: Build release jar
         run: ./gradlew build
