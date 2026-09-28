@@ -1,8 +1,5 @@
-# A deployment template that works out of the box
-# It supports these objectives:
-# - Deploy to Maven (Build Job) [Secrets: MAVEN_USER, MAVEN_PASS]
-# - Deploy to CurseForge (Upload Job) [Secrets: CURSEFORGE_TOKEN]
-# - Deploy to Modrinth (Upload Job) [Secrets: MODRINTH_TOKEN]
+# Release deployment. This workflow only runs for SemVer release tags.
+# Creating a normal commit or pushing a branch never publishes the mod.
 
 name: Deploy
 
@@ -11,6 +8,9 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+'
       - '[0-9]+.[0-9]+.[0-9]+'
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -29,6 +29,17 @@ jobs:
           file: gradle.properties
           all: true
 
+      - name: Validate release tag matches mod version
+        shell: bash
+        env:
+          MOD_VERSION: ${{ steps.properties.outputs.mod_version }}
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$TAG_VERSION" != "$MOD_VERSION" ]; then
+            echo "Release tag version '$TAG_VERSION' does not match mod_version '$MOD_VERSION'."
+            exit 1
+          fi
+
       - name: Setup Java
         uses: actions/setup-java@v5
         with:
@@ -37,6 +48,9 @@ jobs:
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@6
+
+      - name: Build release jar
+        run: ./gradlew build
 
       - name: Publish to Maven
         if: steps.properties.outputs.publish_to_maven == 'true' && steps.properties.outputs.publish_to_local_maven == 'true'
@@ -56,3 +70,11 @@ jobs:
         env:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
         run: ./gradlew modrinth
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ steps.properties.outputs.mod_name }} v${{ steps.properties.outputs.mod_version }}
+          body_path: CHANGELOG.md
+          fail_on_unmatched_files: true
+          files: build/libs/${{ steps.properties.outputs.mod_id }}-${{ steps.properties.outputs.mod_version }}.jar
