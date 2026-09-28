@@ -45,4 +45,25 @@ public class BindingRegistryTest {
 
         assertNull(registry.getActiveEntity("binding-a"));
     }
+
+    @Test
+    public void failedSpawnRestoresPreviousActiveEntity() {
+        BindingRegistry registry = new BindingRegistry();
+        UUID previous = UUID.randomUUID();
+        registry.setActiveEntity("binding-a", UUID.randomUUID());
+
+        ItemEnderTag.restoreActiveEntityAfterFailedSpawn(registry, "binding-a", previous);
+
+        assertEquals(previous, registry.getActiveEntity("binding-a"));
+    }
+
+    @Test
+    public void failedSpawnWithoutPreviousActiveEntityClearsFailedEntity() {
+        BindingRegistry registry = new BindingRegistry();
+        registry.setActiveEntity("binding-a", UUID.randomUUID());
+
+        ItemEnderTag.restoreActiveEntityAfterFailedSpawn(registry, "binding-a", null);
+
+        assertNull(registry.getActiveEntity("binding-a"));
+    }
 }

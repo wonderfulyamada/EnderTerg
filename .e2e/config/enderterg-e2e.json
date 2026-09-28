@@ -1,0 +1,12 @@
+{
+  "minecraft": "1.12.2",
+  "forge": "14.23.5.2847",
+  "java": "1.8.0_502",
+  "instanceId": "1.12.2",
+  "worldId": "New World-",
+  "worldType": "Superflat",
+  "origin": "0 6 0",
+  "remote": "1024 6 0",
+  "wsPort": 25560,
+  "jar": "build/libs/endertag-1.1.0.jar"
+}

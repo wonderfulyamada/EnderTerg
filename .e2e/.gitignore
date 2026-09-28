@@ -1,0 +1,5 @@
+# Reproducible local E2E runtime and generated proof.
+tooling/
+evidence/
+temp/
+*.lock

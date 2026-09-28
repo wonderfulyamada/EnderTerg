@@ -120,11 +120,7 @@ public class ItemEnderTag extends Item {
         // is running, so temporarily nominate the new instance before spawning.
         registry.setActiveEntity(bindingId, newActiveUuid);
         if (!world.spawnEntity(living)) {
-            if (previousActiveUuid == null) {
-                registry.removeActiveEntity(bindingId);
-            } else {
-                registry.setActiveEntity(bindingId, previousActiveUuid);
-            }
+            restoreActiveEntityAfterFailedSpawn(registry, bindingId, previousActiveUuid);
             sendMessage(player, "message.endertag.unavailable");
             return;
         }
@@ -139,6 +135,15 @@ public class ItemEnderTag extends Item {
         NBTTagCompound updatedEntityNbt = writeBoundEntity(living);
         if (updatedEntityNbt != null) {
             tag.setTag(TAG_ENTITY_NBT, updatedEntityNbt);
+        }
+    }
+
+    static void restoreActiveEntityAfterFailedSpawn(BindingRegistry registry, String bindingId,
+            UUID previousActiveUuid) {
+        if (previousActiveUuid == null) {
+            registry.removeActiveEntity(bindingId);
+        } else {
+            registry.setActiveEntity(bindingId, previousActiveUuid);
         }
     }
 

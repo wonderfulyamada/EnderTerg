@@ -3,12 +3,11 @@
 ## [1.1.0] - Unreleased
 
 ### Added
-- Configurable `entityBlacklist` for preventing Ender Terg binding to selected entity registry IDs.
-## [1.0.1] - 2026-09-28
+- Configurable `entityBlacklist` for entity registry IDs that cannot be bound.
 
 ### Fixed
-- Prevented duplicate bound mobs when a previously unloaded instance is loaded after recall.
-- Kept the previous live mob intact if reconstructing or spawning the recalled replacement fails.
+- Prevent duplicate bound entities when the original entity's chunk was unloaded during recall.
+- Preserve the previous bound entity if replacement spawning fails.
 
 ## [1.0.0] - 2026-08-21
 

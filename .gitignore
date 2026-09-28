@@ -23,6 +23,7 @@ out
 # generated development runtime files
 /run/
 /run.bat
+/logs/
 
 # other
 eclipse
