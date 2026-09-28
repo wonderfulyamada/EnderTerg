@@ -23,6 +23,11 @@ Recall reconstructs the bound entity from its stored NBT at your current
 location and dimension. This preserves supported entity data such as its name,
 health, equipment, inventory, AI state, and modded NBT data.
 
+## Configuration
+
+`config/endertag.cfg` provides `entityBlacklist`, an empty-by-default list of
+entity registry IDs (for example, `minecraft:horse`) that cannot be bound.
+
 ## Installation
 
 1. Install Minecraft Forge for 1.12.2.

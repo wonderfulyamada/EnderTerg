@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.1.0] - 2026-09-02
+
+### Added
+- Configurable `entityBlacklist` for preventing Ender Terg binding to selected entity registry IDs.
+
 ## [1.0.0] - 2026-08-21
 
 ### Added

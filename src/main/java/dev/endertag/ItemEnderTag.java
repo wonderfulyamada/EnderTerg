@@ -40,6 +40,11 @@ public class ItemEnderTag extends Item {
         }
 
         if (!player.world.isRemote) {
+            if (isBlacklisted(target)) {
+                sendMessage(player, "message.endertag.blacklisted");
+                return true;
+            }
+
             // EntityPlayer#interactOn passes a copy here in creative mode. Mutate the
             // authoritative hand slot so the binding survives the interaction.
             ItemStack heldStack = player.getHeldItem(hand);
@@ -123,6 +128,23 @@ public class ItemEnderTag extends Item {
         entity.writeToNBT(entityNbt);
         entityNbt.setString("id", entityId.toString());
         return entityNbt;
+    }
+
+    private boolean isBlacklisted(EntityLivingBase entity) {
+        ResourceLocation entityId = EntityList.getKey(entity);
+        if (entityId == null) {
+            return false;
+        }
+        for (String blacklistedId : EnderTagConfig.entityBlacklist) {
+            try {
+                if (entityId.equals(new ResourceLocation(blacklistedId))) {
+                    return true;
+                }
+            } catch (IllegalArgumentException ignored) {
+                // Invalid config values cannot match a registered entity ID.
+            }
+        }
+        return false;
     }
 
     private void removeLoadedInstances(EntityPlayer player, String bindingId) {
