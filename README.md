@@ -1,40 +1,56 @@
 # Ender Terg
 
-Ender Terg binds a named living mob to a reusable tag and recalls it to you.
-Its saved entity NBT lets recall work even when the original chunk is unloaded
-or the mob is in another dimension.
+Minecraft 1.12.2 / Forge 向けの個人制作 MOD です。名前を付けたアイテムにモブを紐付け、プレイヤーの場所へ呼び戻します。
 
-## Requirements
+> **現状:** v1.1.0 を GitHub Releases で配布しています。実装と回帰テストは含まれますが、対応 Minecraft / Forge 環境以外での動作は保証していません。
 
-- Minecraft 1.12.2
-- Forge 14.23.5.2847 or compatible Forge for Minecraft 1.12.2
+## 解決したいこと
 
-## Recipe
+大切な名前付きモブを遠くへ置いたあとでも、対象チャンクが読み込まれていない状態や別ディメンションから呼び戻せるようにすることを目的にしています。
 
-Craft an Ender Terg with a Name Tag and an Ender Pearl.
+## 実装されている機能
 
-## Usage
+- 金床で名前を付けた Ender Terg に、非プレイヤーの生存モブを紐付け
+- 空中で右クリックして、紐付けたモブを現在地・現在のディメンションへ呼び戻し
+- 名前、体力、装備、インベントリ、AI 状態、MOD が追加した NBT を含むエンティティ NBT の保存・復元
+- 読み込まれていないチャンクに元のモブがいる場合も考慮した重複防止
+- 設定で紐付けを禁止するエンティティ ID の一覧
 
-1. Rename the Ender Terg in an anvil.
-2. Right-click a non-player mob with the renamed Ender Terg to bind it.
-3. Right-click while holding the Ender Terg in the air to recall that mob.
+## ダウンロードと導入
 
-Recall reconstructs the bound entity from its stored NBT at your current
-location and dimension. This preserves supported entity data such as its name,
-health, equipment, inventory, AI state, and modded NBT data.
+1. [GitHub Releases](../../releases/latest) から `endertag-1.1.0.jar` をダウンロードします。
+2. Minecraft 1.12.2 用の Forge 14.23.5.2847 または互換 Forge を導入します。
+3. ダウンロードした JAR を対象 Minecraft インスタンスの `mods` フォルダーに置きます。
+4. Forge プロファイルで Minecraft を起動します。
 
-## Configuration
+## 使い方
 
-`config/endertag.cfg` provides `entityBlacklist`, an empty-by-default list of
-entity registry IDs (for example, `minecraft:horse`) that cannot be bound.
+1. Name Tag と Ender Pearl を shapeless レシピでクラフトします。
+2. 金床で Ender Terg に名前を付けます。
+3. 対象の非プレイヤー生存モブを右クリックして紐付けます。
+4. Ender Terg を手に持ち、空中で右クリックして呼び戻します。
 
-## Installation
+## 設定
 
-1. Install Minecraft Forge for 1.12.2.
-2. Download the Ender Terg jar from the release page.
-3. Place the jar in your Minecraft instance's `mods` folder.
-4. Launch Minecraft with the Forge profile.
+`config/endertag.cfg` の `entityBlacklist` にエンティティのレジストリ ID（例: `minecraft:horse`）を入れると、その種類は紐付けられなくなります。初期値は空です。
 
-## License
+## 技術概要
 
-Ender Terg is licensed under the [MIT License](LICENSE).
+Java / Forge 1.12.2 の MOD です。アイテムの NBT に紐付け ID と対象エンティティの NBT を保存し、呼び戻し時に新しい実体を生成します。古い実体との重複を抑えるため、サーバー側の紐付けレジストリを使用します。ユニットテストは `src/test` にあります。
+
+## 制限事項
+
+- プレイヤーは紐付けできません。
+- Minecraft 1.12.2 と Forge 環境専用です。
+- MOD で追加されたエンティティについては、各 MOD の NBT 復元仕様に依存します。
+- エンティティを現在地へ再生成するため、元の場所に戻す機能ではありません。
+
+## 開発について
+
+個人プロジェクトです。作者は課題の整理、機能要件の決定、実装案の確認、動作確認、問題の調査と修正方針の判断を担当しています。実装と検証には AI コーディングツールを利用しています。
+
+変更履歴は [CHANGELOG.md](CHANGELOG.md) を参照してください。
+
+## ライセンス
+
+[MIT License](LICENSE) を適用します。
